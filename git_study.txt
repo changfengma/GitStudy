@@ -1,0 +1,186 @@
+git命令学习总结：
+本地Git仓库部分
+一、创建版本库
+    1.初始化一个git仓库：git init
+    2.添加文件到git仓库，分两步：
+        1）git add <file>:       添加文件修改到暂存区，可多次使用；
+        2）git commit -m "说明": 提交更改，把暂存区的所有内容提交到当前分支；
+二、时光机穿梭
+    1.掌握工作区的状态：git status
+    2.如果git status告诉你文件被修改过，
+      用git diff <file>可以查看工作区和暂存区被修改的内容
+
+三、版本回退
+    1.HEAD指向的版本是当前的版本，因此git允许我们在版本的历史
+      之间穿梭，使用命令 git reset --hard commit_id.
+        1）穿梭前，用git log可以查看提交历史，已确定要回退到那个版本
+        2）要重返未来，用git reflog命令查看历史，已确定要回到未来的那个版本。
+
+四、管理修改 
+    1.用git diff HEAD -- file: 可以查看工作区和版本库里面最新版本的区别。 
+  
+五、撤销修改(3种情况)
+    1.当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改，
+      使用命令：  git checkout -- file  
+    2.当你不但改乱了工作区某个文件的内容，还添加到了暂存区，想丢弃修改，
+      分两步：
+        第一步：使用git reset HEAD file 放弃了暂存区的修改，就回到了1;
+        第二步：按1操作，放弃工作区的修改
+    3.已经提交了不合适的修改到版本库，想要撤销本次提交，就要使用版本回退命令:
+       git reset --hard commit_id
+
+六、删除文件
+    下面操作之前已经 git add 和 git commit了
+   
+    删除工作区的文件：rm file:
+   
+    之后有两种情况：
+   
+    一是确实要删除版本库中的文件，可以使用如下命令： 
+       1）git rm file
+       2）git commit -m "message"
+    二是删错了，因为版本库里还有，所以可以很轻松的把删除文件
+      恢复到最新版本：
+       git checkout -- file
+
+       
+       
+       
+远程git仓库部分
+  说明：
+    1. GitHub提供git仓库托管服务的，只要注册一个账号就能免费获得git远程仓库
+    2. 由于你的本地Git仓库和GitHub仓库之间的传输是通过SSH加密的，所以需要一点设置：
+     第一步：创建SSH Key。
+       在用户主目录下，看看有没有.ssh目录，如果有，再看看这个目录下
+       有没有id_rsa和id_rsa.pub这两个文件，如果已经有了，可以直接跳到下一步。如果没有，
+       打开Shell(windows下打开git bash),创建SSH Key:
+        ssh-keygen -t rsa -C "your email"
+       然后一路回撤就可以了，也可以自己设置密码
+       在用户主目录里找到.ssh目录，里面有id_rsa和id_rsa.pub两个文件，这两个就是
+       SSH Key的秘钥对，id_rsa是私钥，不能泄露出去，id_rsa.pub是公钥，可以放心的告诉任何人
+     第二步：登录GitHub，打开settings, SSH Key页面
+          然后点击Add SSH Key,填上任意的Title，在key文本框里粘贴id_rsa.pub内容
+          
+      友情提示：在GitHub上免费托管的Git仓库，任何人都可以看到，只有自己可以修改
+      
+      
+一，添加远程库
+  前提，要在GitHub上创建一个和本地工作区同名的repository
+  1.要关联一个远程库，使用命令：
+   git remote add origin https://github.com/changfengma/learngit.git
+   注意：changfengma根据自己的用户名修改；
+   关联后，远程库的名字就是origin，这是Git默认的叫法，也可以改成别的，
+   但是origin这个名字一看就知道是远程库。
+    git remote rm origin:删除已关联的远程库origin
+  2.关联后，使用命令：
+    git push -u origin master
+    第一次推送master分支的所有内容；
+  
+  3.此后，每次本地提交后，只要有必要，就可以使用命令：
+     git push origin master  推送最新修改。
+
+二、从远程库克隆
+   1.要克隆一个仓库，首先必须知道仓库的地址，然后使用
+   git clone 地址命令克隆
+   2.Git支持多种协议，包括https,但通过ssh支持的git协议速度最快
+
+   
+分支管理部分
+     分支在实际中有什么用呢？假设你准备开发一个新功能，但是需要两周
+  才能完成，第一周你写了50%的代码，如果立刻提交，由于代码还没有写完，
+  不完整的代码库会导致别人不能干活了。如果等代码全部写完再一起提交，
+  又存在丢失每天进度的巨大风险。
+     现在有了分支就不用怕了。你创建一个属于你自己的分支，别人看不到，
+  还继续在原来的分支上正常工作，而你在自己的分支上干活，想提交就提交，
+  直到开发完毕后，再一次性合并到原来的分支，这样既安全，又不影响别人的工作。
+
+一、创建与合并分支
+   1.查看分支： git branch
+   2.创建分支:  git branch <name>
+   3.切换分支： git checkout <name>
+   4.创建+切换分支：git checkout -b <name>
+   5.合并某分支到当前分支: git merge <name>
+   6.删除分支：git branch -d <name>
+二、解决冲突(conflict)
+  1.当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，
+  再提交，合并完成
+  2.用git log --graph命令可以看到分支合并图
+三、分支管理策略
+  1.在实际开发中，我们应该按照几个基本原则进行分支管理：
+  1）.首先,master分支应该是非常稳定的，也就是仅用来发布新版本，平时不能在上面干活
+  2）.干活都在dev分支上，也就是说dev分支是不稳定的，到某个时候，在吧dev
+  分支合并到master上，在master上发布；
+ 
+ 2.合并分支时，加上--no-ff参数可以用普通模式合并，合并后的历史有分支，
+ 能看出来曾经做过的合并，而fast forward合并就看不出来曾经做过合并。
+ 
+ 3.BUG分支
+   1).修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；
+   2).当手头工作没有完成时，先把工作现场git stash一下，把当前现场储存起来，
+   然后去修复bug，修复后，再git stash pop,回到工作现场；
+   3).git stash list命令查看储存的工作现场；
+   4.恢复工作现场，有两个办法：
+     1>用git stash apply恢复，但是回复后，stash内容并不删除，需要用git stash drop来删除；
+     2>用git stash pop,恢复的同时也删除了；
+ 
+ 4.Feature分支
+   软件开发中，总有无穷无尽的新的功能要不断添加进来，所以，每添加一个新功能，
+   最好新建一个feature分支，在上面开发，完成后，合并，最后，删除该feature分支。
+   1）开发一个新的feature,最好新建一个分支；
+   2）如果要丢弃一个没有被合并过的分支，可以通过
+     git branch -D <name>强行删除；
+ 
+ 5.多人协作
+     1)查看远程库信息: git remote -v;
+     2)本地新建的分支如果不推送到远程，对其他人就是不可见的；
+     3)从本地推送分支，使用git push origin branch-name,
+       如果推送失败，先用git pull 抓取远程新的提交；
+     4)在本地创建和远程分支对应的分支，使用
+       git checkout -b branch-name origin/branch-name,
+       本地和远程分支分名字最好一致；
+     5)建立本地分支和远程分支的关联，使用
+       git branch --set-upstream branch-name origin/branch-name;
+     6)从远程抓取分支，使用git pull,如果有冲突，要先处理冲突。
+四、标签管理
+   tag就是一个让人容易记住的有意义的名字，它跟某个commit绑在一起。
+   1.创建标签
+       1）git tag <name> :用于新建一个标签，默认为HEAD，也可以指定commit_id;
+       2）git tag -a <tagname> -m "message":可以指定标签信息；
+       3）git tag -s <tagname> -m "message" :可以用PGP签名标签；
+       4）git tag可以查看所有标签
+   2.操作标签
+       1）git push origin <tagname>:可以推送一个本地标签
+       2）git push origin --tags:推送全部未推送过的本地标签
+       3）git tag -d <tagname>:删除本地标签
+       4）git push origin :refs/tags/<tagname>:删除远程标签
+       
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
